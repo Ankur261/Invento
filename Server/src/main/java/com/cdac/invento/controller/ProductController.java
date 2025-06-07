@@ -15,6 +15,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/products")
+@CrossOrigin(origins = "http://localhost:5173") 
 public class ProductController {
 
     @Autowired
@@ -62,4 +63,34 @@ public class ProductController {
                 ))
                 .toList();
     }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteProduct(@PathVariable Integer id) {
+        Optional<Product> productOpt = productRepository.findById(id);
+        if (productOpt.isPresent()) {
+            productRepository.deleteById(id);
+            return ResponseEntity.ok("Product deleted successfully");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    
+    @PutMapping("/products/{id}")
+    public ResponseEntity<?> updateProduct(@PathVariable Integer id, @RequestBody Product updatedProduct) {
+        Optional<Product> existingProductOpt = productRepository.findById(id);
+        if (existingProductOpt.isPresent()) {
+            Product existingProduct = existingProductOpt.get();
+
+            existingProduct.setName(updatedProduct.getName());
+            existingProduct.setPrice(updatedProduct.getPrice());
+            existingProduct.setstock(updatedProduct.getstock());
+            existingProduct.setCategory(updatedProduct.getCategory());
+
+            productRepository.save(existingProduct);
+            return ResponseEntity.ok("Product updated successfully");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }
