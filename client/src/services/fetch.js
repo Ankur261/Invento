@@ -1,19 +1,27 @@
 
 
 
-export default async function fetchData(url, body) {
+export default async function fetchData(apiName, body, method) {
+    const baseURL = "http://localhost:8080/";
 
     try {
-        const response = await fetch(url, {
+         console.log(baseURL + apiName);
+         console.log(JSON.stringify(body));
+        const response = await fetch(baseURL + apiName, {
             headers: {
                 'Content-Type': 'application/json',
-            }, body: JSON.stringify(body)
+            },
+            method: method ?? "GET",
+            body: JSON.stringify(body)
         });
-        const result = await response.json();
-        return result;
+       
+        const data = await response.json();
+        return data;
+
     } catch (error) {
         console.log(error);
         throw error;
     }
+
 
 }
