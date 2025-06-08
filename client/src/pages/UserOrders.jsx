@@ -8,8 +8,15 @@ const OrdersTable = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
+      // const userId = localStorage.getItem("userId");
+      // if (!userId) {
+      //   setError("User not logged in.");
+      //   setLoading(false);
+      //   return;
+      // }
+
       try {
-        const response = await axios.get("http://localhost:8080/orders/admin");
+        const response = await axios.get(`http://localhost:8080/orders/user/${userId}`);
         setOrders(response.data);
       } catch (err) {
         setError(err.message);
@@ -45,8 +52,6 @@ const OrdersTable = () => {
           <thead>
             <tr className="bg-gray-100 text-gray-700 text-center">
               <th className="py-2 px-4 border-b">ID</th>
-              <th className="py-2 px-4 border-b">Name</th>
-              <th className="py-2 px-4 border-b">Address</th>
               <th className="py-2 px-4 border-b">Product Name</th>
               <th className="py-2 px-4 border-b">Category</th>
               <th className="py-2 px-4 border-b">Quantity</th>
@@ -59,8 +64,6 @@ const OrdersTable = () => {
               orders.map((order) => (
                 <tr key={order.id} className="hover:bg-gray-50 text-gray-700 text-center">
                   <td className="py-2 px-4 border-b">{order.id}</td>
-                  <td className="py-2 px-4 border-b">{order.userName}</td>
-                  <td className="py-2 px-4 border-b">{order.userAddress}</td>
                   <td className="py-2 px-4 border-b">{order.productName}</td>
                   <td className="py-2 px-4 border-b">{order.category}</td>
                   <td className="py-2 px-4 border-b">{order.quantity}</td>

@@ -16,7 +16,7 @@ public class Product {
 
     @ManyToOne
     @JoinColumn(name = "category", referencedColumnName = "Name")
-    private CategoryTable category;
+    private Category category;
 
     @Column(name = "Price", precision = 10, scale = 2)
     private BigDecimal price;
@@ -32,8 +32,8 @@ public class Product {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public CategoryTable getCategory() { return category; }
-    public void setCategory(CategoryTable category) { this.category = category; }
+    public Category getCategory() { return category; }
+    public void setCategory(Category category) { this.category = category; }
 
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
