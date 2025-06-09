@@ -15,6 +15,7 @@ export default function Products() {
   const [editingProductId, setEditingProductId] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
+    categoryName: '',
     price: '',
     stock: '',
   });
@@ -67,13 +68,15 @@ export default function Products() {
         },
         body: JSON.stringify({
           name: formData.name,
+          categoryName: formData.categoryName,
           price: parseFloat(formData.price),
           stock: parseInt(formData.stock),
         }),
       });
 
       if (response.ok) {
-        resetModal();
+        setFormData({ name: '', categoryName: '', price: '', stock: '' });
+        setShowModal(false);
         loadProducts();
       } else {
         const error = await response.text();
@@ -89,6 +92,7 @@ export default function Products() {
     setEditingProductId(product.id);
     setFormData({
       name: product.name,
+      categoryName: product.category, // Don't touch
       price: product.price,
       stock: product.stock,
     });
@@ -106,28 +110,25 @@ export default function Products() {
         },
         body: JSON.stringify({
           name: formData.name,
+          categoryName: formData.categoryName,  // Don't touch
           price: parseFloat(formData.price),
           stock: parseInt(formData.stock),
         }),
       });
 
       if (response.ok) {
-        resetModal();
+        setFormData({ name: '', categoryName: '', price: '', stock: '' });
+        setShowModal(false);
+        setIsEditing(false);
+        setEditingProductId(null);
         loadProducts();
       } else {
         const error = await response.text();
-        alert('Error: ' + error);
+        alert('Error updating product: ' + error);
       }
     } catch (error) {
       console.error('Error updating product:', error);
     }
-  };
-
-  const resetModal = () => {
-    setFormData({ name: '', price: '', stock: '' });
-    setIsEditing(false);
-    setEditingProductId(null);
-    setShowModal(false);
   };
 
   const filteredProducts = products.filter((product) =>
@@ -141,9 +142,9 @@ export default function Products() {
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
           onClick={() => {
-            setIsEditing(false);
-            setFormData({ name: '', price: '', stock: '' });
             setShowModal(true);
+            setIsEditing(false);
+            setFormData({ name: '', categoryName: '', price: '', stock: '' });
           }}
         >
           Add Product
@@ -155,7 +156,7 @@ export default function Products() {
         placeholder="Search products by name..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full px-4 py-2 mb-6 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring focus:border-blue-400 text-gray-800"
+        className=" w-full px-4 py-2 mb-6 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring focus:border-blue-400 text-gray-800"
       />
 
       <div className="overflow-x-auto bg-white rounded shadow-sm">
@@ -163,6 +164,7 @@ export default function Products() {
           <thead className="bg-gray-200 text-gray-800 font-semibold">
             <tr>
               <th className="px-4 py-3">Name</th>
+              <th className="px-4 py-3">Category</th>
               <th className="px-4 py-3">Price</th>
               <th className="px-4 py-3">Stock</th>
               <th className="px-4 py-3">Action</th>
@@ -173,6 +175,7 @@ export default function Products() {
               filteredProducts.map((product) => (
                 <tr key={product.id} className="border-t hover:bg-gray-50">
                   <td className="px-4 py-2">{product.name}</td>
+                  <td className="px-4 py-2">{product.category}</td>
                   <td className="px-4 py-2">${product.price.toFixed(2)}</td>
                   <td className="px-4 py-2">
                     <span
@@ -199,7 +202,7 @@ export default function Products() {
               ))
             ) : (
               <tr>
-                <td colSpan="4" className="text-center px-4 py-4 text-gray-500">
+                <td colSpan="5" className="text-center px-4 py-4 text-gray-500">
                   No products found.
                 </td>
               </tr>
@@ -221,10 +224,20 @@ export default function Products() {
               className="space-y-4"
             >
               <input
+                autoFocus
                 type="text"
                 name="name"
                 placeholder="Name"
                 value={formData.name}
+                onChange={handleInputChange}
+                required
+                className="w-full px-4 py-2 border rounded"
+              />
+              <input
+                type="text"
+                name="categoryName"
+                placeholder="Category"
+                value={formData.categoryName}
                 onChange={handleInputChange}
                 required
                 className="w-full px-4 py-2 border rounded"
@@ -251,7 +264,11 @@ export default function Products() {
               <div className="flex justify-end gap-3 mt-4">
                 <button
                   type="button"
-                  onClick={resetModal}
+                  onClick={() => {
+                    setShowModal(false);
+                    setIsEditing(false);
+                    setFormData({ name: '', categoryName: '', price: '', stock: '' });
+                  }}
                   className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
                 >
                   Cancel

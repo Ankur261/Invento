@@ -1,11 +1,12 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/Dashboard";
-import Products from "./pages/Products";
+//import Products from "./pages/Products";
+import Products from "../src/pages/productsuser/userProducts";
 import Categories from "./pages/Categories";
 import Orders from "./pages/Orders";
-import Users from "./pages/Users";
 import Profile from "./pages/Profile";
+import Users from "./pages/Users";
 
 function App() {
   return (
