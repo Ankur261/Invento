@@ -1,12 +1,10 @@
 package com.cdac.invento.service;
 
-import com.cdac.invento.model.AdminOrderDto;
-import com.cdac.invento.model.OrderDto;
-import java.util.List;
+
+
+import com.cdac.invento.model.OrderRequestDTO;
+import com.cdac.invento.model.Order;
 
 public interface OrderService {
-    List<OrderDto> getUserOrders(Long userId);
-    List<AdminOrderDto> getAllOrders();
+    Order placeOrder(OrderRequestDTO requestDTO);
 }
-    // OrderDto createOrder(Long userId, Long productId, int quantity);
- 

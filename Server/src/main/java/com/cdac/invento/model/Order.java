@@ -2,6 +2,8 @@ package com.cdac.invento.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -48,4 +50,9 @@ public class Order {
     public double getTotalPrice() {
         return totalPrice;
     }
+
+	public void setOrderDate(Object orderDate2) {
+		// TODO Auto-generated method stub
+		
+	}
 }
