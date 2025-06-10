@@ -7,6 +7,7 @@ import Orders from "./pages/Orders";
 import Users from "./pages/Users";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
+import UserProducts from "./pages/productsuser/userProducts"
 
 function AppRoutes() {
   const location = useLocation();
@@ -20,7 +21,7 @@ const user = JSON.parse(localStorage.getItem("user"));
           <main className="text-black flex-1 p-6 bg-gray-100 min-h-screen">
             <Routes>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/products" element={<Products />} />
+              <Route path="/products" element={user.role == "ADMIN" ? <Products />: <UserProducts/>} />
               <Route path="/categories" element={<Categories />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/users" element={<Users />} />

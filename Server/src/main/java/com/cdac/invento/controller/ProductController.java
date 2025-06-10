@@ -1,96 +1,46 @@
- package com.cdac.invento.controller;
+package com.cdac.invento.controller;
 
- import com.cdac.invento.model.Category;
- import com.cdac.invento.model.Product;
- import com.cdac.invento.model.ProductDTO;
- import com.cdac.invento.repository.CategoryRepository;
- import com.cdac.invento.repository.ProductRepository;
- import org.springframework.beans.factory.annotation.Autowired;
- import org.springframework.http.ResponseEntity;
- import org.springframework.web.bind.annotation.*;
+import com.cdac.invento.model.ProductDTO;
+import com.cdac.invento.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
- import java.math.BigDecimal;
- import java.util.List;
- import java.util.Optional;
+import java.math.BigDecimal;
+import java.util.List;
 
- @RestController
- @RequestMapping("/products")
- @CrossOrigin(origins = "http://localhost:5173") 
- public class ProductController {
+@RestController
+@RequestMapping("/products")
+@CrossOrigin(origins = "http://localhost:5173")
+public class ProductController {
 
-     @Autowired
-     private ProductRepository productRepository;
+    @Autowired
+    private ProductService productService;
 
-     @Autowired
-     private CategoryRepository categoryRepository;
+    public static class ProductRequest {
+        public String name;
+        public String categoryName;
+        public BigDecimal price;
+        public int stock;
+    }
 
-  // DTO for product input separate DTO
-     public static class ProductRequest {
-         public String name;
-         public String categoryName;
-         public BigDecimal price;
-         public int stock;
-     }
+    @PostMapping
+    public ResponseEntity<?> addProduct(@RequestBody ProductRequest productRequest) {
+        return productService.addProduct(productRequest);
+    }
 
-     @PostMapping
-     public ResponseEntity<?> addProduct(@RequestBody ProductRequest productRequest) {
-         Optional<Category> categoryOpt = categoryRepository.findByName(productRequest.categoryName);
-         if (!categoryOpt.isPresent()) {
-             return ResponseEntity.badRequest().body("Category does not exist");
-         }
+    @GetMapping
+    public List<ProductDTO> getAllProducts() {
+        return productService.getAllProducts();
+    }
 
-         Product product = new Product();
-         product.setName(productRequest.name);
-         product.setCategory(categoryOpt.get());
-         product.setPrice(productRequest.price);
-         product.setstock(productRequest.stock);
-         Product savedProduct = productRepository.save(product);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteProduct(@PathVariable Integer id) {
+        return productService.deleteProduct(id);
+    }
 
-         return ResponseEntity.ok(savedProduct);
-     }
-
-     @GetMapping
-     public List<ProductDTO> getAllProducts() {
-         List<Product> products = productRepository.findAll();
-
-         return products.stream()
-                 .map(product -> new ProductDTO(
-                         product.getId(),
-                         product.getName(),
-                         product.getCategory().getName(),
-                         product.getPrice(),
-                         product.getstock()
-                 ))
-                 .toList();
-     }
-    
-     @DeleteMapping("/{id}")
-     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
-         Optional<Product> productOpt = productRepository.findById(id);
-         if (productOpt.isPresent()) {
-             productRepository.deleteById(id);
-             return ResponseEntity.ok("Product deleted successfully");
-         } else {
-             return ResponseEntity.notFound().build();
-         }
-     }
-    
-     @PutMapping("/products/{id}")
-     public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody Product updatedProduct) {
-         Optional<Product> existingProductOpt = productRepository.findById(id);
-         if (existingProductOpt.isPresent()) {
-             Product existingProduct = existingProductOpt.get();
-
-             existingProduct.setName(updatedProduct.getName());
-             existingProduct.setPrice(updatedProduct.getPrice());
-             existingProduct.setstock(updatedProduct.getstock());
-             existingProduct.setCategory(updatedProduct.getCategory());
-
-             productRepository.save(existingProduct);
-             return ResponseEntity.ok("Product updated successfully");
-         } else {
-             return ResponseEntity.notFound().build();
-         }
-     }
-
- }
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateProduct(@PathVariable Integer id, @RequestBody ProductRequest updatedProduct) {
+        return productService.updateProduct(id, updatedProduct);
+    }
+}

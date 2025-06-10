@@ -32,7 +32,7 @@ public class OrderServiceImpl implements OrderService {
     public Order placeOrder(OrderRequestDTO dto) {
         User user = userRepo.findById((long) dto.getUserId())
                             .orElseThrow(() -> new RuntimeException("User not found"));
-        Product product = productRepo.findById((long) dto.getProductId())
+        Product product = productRepo.findById((int) dto.getProductId())
                                      .orElseThrow(() -> new RuntimeException("Product not found"));
 
         BigDecimal expectedPrice = product.getPrice().multiply(BigDecimal.valueOf(dto.getQuantity()));
