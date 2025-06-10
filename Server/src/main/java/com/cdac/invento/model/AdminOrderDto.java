@@ -2,17 +2,14 @@ package com.cdac.invento.model;
 
 import lombok.Data;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-public record AdminOrderDto(
-	    Long id,
-	    String productName,
-	    String category,
-	    int quantity,
-	    BigDecimal totalPrice,
-	    LocalDate orderDate,
-	    String userName,
-	    String userAddress,
-	    String status
-	) {}
+@Data
+public class AdminOrderDto {
+    private Long id;
+    private String userName;
+    private String userAddress;
+    private String productName;
+    private String category;
+    private int quantity;
+    private double totalPrice;
+    private String orderDate; // formatted as "yyyy-MM-dd"
+}

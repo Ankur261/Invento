@@ -59,7 +59,7 @@ public class UserService {
                 .name(userDTO.getName())
                 .email(userDTO.getEmail())
                 .password(passwordEncoder.encode(userDTO.getPassword()))
-                .role(Role.CUSTOMER) // default role
+                .role(userDTO.getRole() != null ? userDTO.getRole() : Role.CUSTOMER)
                 .address(userDTO.getAddress())
                 .build();
 
@@ -94,6 +94,6 @@ public class UserService {
     }
 
 
-    // Logout method can be empty here or managed at controller level (invalidate HttpSession)
+   
 }
 

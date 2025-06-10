@@ -13,5 +13,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     
     // OR Option 2: Using explicit JPQL query
     @Query("SELECT o FROM Order o WHERE o.user.id = :userId")
-    List<Order> findByUserId(@Param("userId") Long userId);
+    List<Order> findByUserId(@Param("userId") int userId);
 }

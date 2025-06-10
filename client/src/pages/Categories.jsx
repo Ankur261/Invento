@@ -157,7 +157,7 @@ const CategoryManagement = () => {
             <label className="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
             <input
               type="text"
-              className="w-full p-2 border text-gray-700 border-gray-300 rounded-md"
+              className="w-full p-2 border text-white border-gray-300 rounded-md"
               placeholder="Enter category name"
               value={newCategory.name}
               onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
@@ -167,7 +167,7 @@ const CategoryManagement = () => {
             <label className="block text-sm font-medium text-gray-700 mb-1">ID</label>
             <input
               type="number"
-              className="w-full p-2 border text-gray-700 border-gray-300 rounded-md"
+              className="w-full p-2 border text-white border-gray-300 rounded-md"
               value={newCategory.id}
               onChange={(e) => setNewCategory({...newCategory, id: e.target.value})}
             />

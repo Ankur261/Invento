@@ -47,7 +47,7 @@ const UsersManagement = () => {
       <div className="w-1/3 bg-white p-4 rounded shadow">
         <h2 className="text-xl font-semibold mb-4">Add New User</h2>
         <input type="text" name="name" placeholder="Enter Name"
-               className="w-full p-2 mb-2 border rounded"
+               className="bg-white w-full p-2 mb-2 border rounded"
                value={form.name} onChange={handleInputChange} />
         <input type="email" name="email" placeholder="Enter Email"
                className="w-full p-2 mb-2 border rounded"

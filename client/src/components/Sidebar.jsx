@@ -27,10 +27,6 @@ const Sidebar = () => {
       </div>
 
       <nav className="flex-1 p-4 space-y-2">
-        <SidebarLink to="/products" icon={<Package size={20} />} text="Products" />
-        <SidebarLink to="/orders" icon={<ShoppingCart size={20} />} text="Orders" />
-        <SidebarLink to="/profile" icon={<Settings size={20} />} text="Profile" />
-
         {role === "ADMIN" && (
           <>
             <SidebarLink to="/" icon={<Home size={20} />} text="Dashboard" />
@@ -38,6 +34,11 @@ const Sidebar = () => {
             <SidebarLink to="/users" icon={<Users size={20} />} text="Users" />
           </>
         )}
+        <SidebarLink to="/products" icon={<Package size={20} />} text="Products" />
+        <SidebarLink to="/orders" icon={<ShoppingCart size={20} />} text="Orders" />
+        <SidebarLink to="/profile" icon={<Settings size={20} />} text="Profile" />
+
+        
       </nav>
 
       <div className="p-4 border-t border-gray-700">

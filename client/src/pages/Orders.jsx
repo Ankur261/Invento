@@ -1,18 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const OrdersTable = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchOrders = async () => {
+      
       try {
-        const response = await axios.get("http://localhost:8080/orders/admin");
+        const user = JSON.parse(localStorage.getItem("user"));
+  const role = user?.role || "";
+  console.log(user)
+        const response = await axios.get(role === "ADMIN" ? "http://localhost:8080/orders/admin" : `http://localhost:8080/orders/user/${user.id}`);
         setOrders(response.data);
       } catch (err) {
-        setError(err.message);
+        setError("Failed to fetch orders. Please try again later.");
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -32,22 +37,22 @@ const OrdersTable = () => {
   if (error) {
     return (
       <div className="p-6 text-red-500">
-        <p>Error loading orders: {error}</p>
+        <p>{error}</p>
       </div>
     );
   }
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6 text-gray-700">Orders</h1>
+      <h2 className="text-2xl font-semibold mb-4 text-gray-800">All Orders</h2>
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200">
-          <thead>
-            <tr className="bg-gray-100 text-gray-700 text-center">
-              <th className="py-2 px-4 border-b">ID</th>
-              <th className="py-2 px-4 border-b">Name</th>
+        <table className="min-w-full border border-gray-200 bg-white shadow-sm">
+          <thead className="bg-gray-100">
+            <tr className="text-gray-700 text-center">
+              <th className="py-2 px-4 border-b">Order ID</th>
+              <th className="py-2 px-4 border-b">User Name</th>
               <th className="py-2 px-4 border-b">Address</th>
-              <th className="py-2 px-4 border-b">Product Name</th>
+              <th className="py-2 px-4 border-b">Product</th>
               <th className="py-2 px-4 border-b">Category</th>
               <th className="py-2 px-4 border-b">Quantity</th>
               <th className="py-2 px-4 border-b">Total Price</th>
@@ -57,21 +62,27 @@ const OrdersTable = () => {
           <tbody>
             {orders.length > 0 ? (
               orders.map((order) => (
-                <tr key={order.id} className="hover:bg-gray-50 text-gray-700 text-center">
+                <tr key={order.id} className="text-center hover:bg-gray-50">
                   <td className="py-2 px-4 border-b">{order.id}</td>
                   <td className="py-2 px-4 border-b">{order.userName}</td>
                   <td className="py-2 px-4 border-b">{order.userAddress}</td>
                   <td className="py-2 px-4 border-b">{order.productName}</td>
                   <td className="py-2 px-4 border-b">{order.category}</td>
                   <td className="py-2 px-4 border-b">{order.quantity}</td>
-                  <td className="py-2 px-4 border-b">${order.totalPrice.toFixed(2)}</td>
-                  <td className="py-2 px-4 border-b">{new Date(order.orderDate).toLocaleDateString()}</td>
+                  <td className="py-2 px-4 border-b">
+                    ₹{order.totalPrice?.toFixed(2)}
+                  </td>
+                  <td className="py-2 px-4 border-b">
+                    {order.orderDate
+                      ? new Date(order.orderDate).toLocaleDateString()
+                      : new Date().toLocaleDateString()}
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="8" className="py-4 text-center text-gray-500">
-                  No orders found
+                <td colSpan="8" className="py-4 text-gray-500 text-center">
+                  No orders available.
                 </td>
               </tr>
             )}
