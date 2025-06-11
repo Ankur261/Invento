@@ -1,30 +1,26 @@
 import React, { useEffect, useState } from 'react';
-// import { fetchDashboardStats } from '../services/dashboardService';
 import Card from '../../components/card';
 import InfoCard from '../../components/InfoCard';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
-  "totalProducts": 8,
-  "totalStock": 65,
-  "ordersToday": 0,
-  "revenue": 1000,
-  "outOfStock": [
-    {"name": "Screen", "category": "Electronic"}
-  ],
-  "highestSaleProduct": {
-    "name": "Monitor",
-    "category": "Electronic",
-    "totalUnitsSold": 2
-  },
-  "lowStock": [
-    {"name": "Monitor", "stock": 3, "category": "Electronic"},
-    {"name": "PC", "stock": 3, "category": "Tech"},
-    {"name": "RAM", "stock": 2, "category": "Tech"}
-  ]
-});
+    totalProducts: 4,
+    totalStock: 185, // 10 + 50 + 25 + 100
+    ordersToday: 0, // Mock for now
+    revenue: 0, // Can be dynamic from backend
+    outOfStock: [], // All products have stock
+    highestSaleProduct: {
+      name: 'Laptops',
+      category: 'Electronics',
+      totalUnitsSold: 20 // mock
+    },
+    lowStock: [
+      { name: 'Laptops', stock: 10, category: 'Electronics' },
+      { name: 'Java Programming Book', stock: 25, category: 'Books' }
+    ]
+  });
 
-
+  // Uncomment and implement real API call later
   // useEffect(() => {
   //   fetchDashboardStats().then(data => setStats(data));
   // }, []);
@@ -39,14 +35,18 @@ const Dashboard = () => {
         <Card title="Total Products" value={stats.totalProducts} color="bg-blue-500" />
         <Card title="Total Stock" value={stats.totalStock} color="bg-green-500" />
         <Card title="Order Today" value={stats.ordersToday} color="bg-yellow-500" />
-        <Card title="Revenue" value={`$${stats.revenue}`} color="bg-purple-500" />
+        <Card title="Revenue" value={`₹${stats.revenue}`} color="bg-purple-500" />
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         <InfoCard title="Out of Stock Products">
-          {stats.outOfStock.map((item, index) => (
-            <div key={index}>{item.name} <span className="text-gray-500">({item.category})</span></div>
-          ))}
+          {stats.outOfStock.length > 0 ? (
+            stats.outOfStock.map((item, index) => (
+              <div key={index}>{item.name} <span className="text-gray-500">({item.category})</span></div>
+            ))
+          ) : (
+            <div className="text-gray-400">No out of stock products</div>
+          )}
         </InfoCard>
 
         <InfoCard title="Highest Sale Product">
@@ -66,9 +66,5 @@ const Dashboard = () => {
     </div>
   );
 };
-
-
-
-
 
 export default Dashboard;

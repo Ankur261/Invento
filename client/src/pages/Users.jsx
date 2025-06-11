@@ -1,4 +1,3 @@
-// src/components/UsersManagement.jsx
 import React, { useState, useEffect } from 'react';
 import { getAllUsers, addUser, deleteUser } from '../services/userService';
 
@@ -11,14 +10,24 @@ const UsersManagement = () => {
     address: '',
     role: 'CUSTOMER'
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
   const fetchUsers = async () => {
-    const data = await getAllUsers();
-    setUsers(data);
+    setLoading(true);
+    try {
+      const data = await getAllUsers();
+      setUsers(data);
+    } catch (err) {
+      setError('Failed to fetch users');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -26,79 +35,179 @@ const UsersManagement = () => {
   };
 
   const handleAddUser = async () => {
-    if (!form.name || !form.email || !form.password || !form.address || !form.role) {
-      alert('Please fill all fields');
+    if (!form.name || !form.email || !form.password || !form.address) {
+      setError('Please fill all required fields');
       return;
     }
 
-    await addUser(form);
-    setForm({ name: '', email: '', password: '', address: '', role: 'CUSTOMER' });
-    fetchUsers();
+    setLoading(true);
+    try {
+      await addUser(form);
+      setForm({ name: '', email: '', password: '', address: '', role: 'CUSTOMER' });
+      await fetchUsers();
+      setError('');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to add user');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDeleteUser = async (id) => {
-    await deleteUser(id);
-    fetchUsers();
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
+    
+    setLoading(true);
+    try {
+      await deleteUser(id);
+      await fetchUsers();
+    } catch (err) {
+      setError('Failed to delete user');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="p-6 flex gap-6">
-      {/* Add User Form */}
-      <div className="w-1/3 bg-white p-4 rounded shadow">
-        <h2 className="text-xl font-semibold mb-4">Add New User</h2>
-        <input type="text" name="name" placeholder="Enter Name"
-               className="bg-white w-full p-2 mb-2 border rounded"
-               value={form.name} onChange={handleInputChange} />
-        <input type="email" name="email" placeholder="Enter Email"
-               className="w-full p-2 mb-2 border rounded"
-               value={form.email} onChange={handleInputChange} />
-        <input type="password" name="password" placeholder="Enter Password"
-               className="w-full p-2 mb-2 border rounded"
-               value={form.password} onChange={handleInputChange} />
-        <input type="text" name="address" placeholder="Enter Address"
-               className="w-full p-2 mb-2 border rounded"
-               value={form.address} onChange={handleInputChange} />
-        <select name="role" className="w-full p-2 mb-4 border rounded"
-                value={form.role} onChange={handleInputChange}>
-          <option value="ADMIN">Admin</option>
-          <option value="CUSTOMER">Customer</option>
-        </select>
-        <button onClick={handleAddUser}
-                className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
-          Add User
-        </button>
-      </div>
+    <div className="p-6 max-w-7xl mx-auto">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Users Management</h1>
+      
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
+          {error}
+        </div>
+      )}
 
-      {/* User Table */}
-      <div className="w-2/3">
-        <h2 className="text-xl font-semibold mb-4">Users Management</h2>
-        <input type="text" placeholder="Search users..."
-               className="w-full p-2 mb-3 border rounded" />
-        <table className="w-full bg-white shadow rounded">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="p-2">ID</th>
-              <th className="p-2">Name</th>
-              <th className="p-2">Email</th>
-              <th className="p-2">Role</th>
-              <th className="p-2">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id} className="border-t">
-                <td className="p-2">{user.id}</td>
-                <td className="p-2">{user.name}</td>
-                <td className="p-2">{user.email}</td>
-                <td className="p-2 lowercase">{user.role}</td>
-                <td className="p-2">
-                  <button onClick={() => handleDeleteUser(user.id)}
-                          className="text-red-500 hover:underline">Delete</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Add User Form */}
+        <div className="lg:w-1/3 bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Add New User</h2>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+              <input 
+                type="text" 
+                name="name" 
+                placeholder="Full name"
+                className="text-white w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                value={form.name} 
+                onChange={handleInputChange} 
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+              <input 
+                type="email" 
+                name="email" 
+                placeholder="Email address"
+                className="text-white w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                value={form.email} 
+                onChange={handleInputChange} 
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+              <input 
+                type="password" 
+                name="password" 
+                placeholder="Create password"
+                className="text-white w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                value={form.password} 
+                onChange={handleInputChange} 
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
+              <input 
+                type="text" 
+                name="address" 
+                placeholder="Full address"
+                className="text-white w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                value={form.address} 
+                onChange={handleInputChange} 
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+              <select 
+                name="role" 
+                className="text-white w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                value={form.role} 
+                onChange={handleInputChange}
+              >
+                <option value="ADMIN">Admin</option>
+                <option value="CUSTOMER">Customer</option>
+              </select>
+            </div>
+
+            <button 
+              onClick={handleAddUser}
+              disabled={loading}
+              className={`text-white w-full mt-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            >
+              {loading ? 'Adding...' : 'Add User'}
+            </button>
+          </div>
+        </div>
+
+        {/* User Table */}
+        <div className="lg:w-2/3">
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-800">User List</h2>
+              
+            </div>
+
+            {loading && users.length === 0 ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {users.map((user) => (
+                      <tr key={user.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.id}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            ${user.role === 'ADMIN' ? 'bg-indigo-100 text-indigo-800' : 'bg-green-100 text-green-800'}`}>
+                            {user.role.toLowerCase()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <button
+                            onClick={() => handleDeleteUser(user.id)}
+                            disabled={loading}
+                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

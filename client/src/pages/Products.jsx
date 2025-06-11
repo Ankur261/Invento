@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import fetchData from '../services/fetch';
 
 const getStockBadgeColor = (stock) => {
-  if (stock === 0) return 'bg-red-200 text-red-800';
-  if (stock < 5) return 'bg-yellow-200 text-yellow-800';
-  return 'bg-green-200 text-green-800';
+  if (stock === 0) return 'bg-red-100 text-red-800';
+  if (stock < 5) return 'bg-yellow-100 text-yellow-800';
+  return 'bg-green-100 text-green-800';
 };
 
 export default function Products() {
@@ -19,17 +19,24 @@ export default function Products() {
     price: '',
     stock: '',
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadProducts();
   }, []);
 
   const loadProducts = async () => {
+    setIsLoading(true);
     try {
       const data = await fetchData('http://localhost:8080/products');
       setProducts(data);
+      setError(null);
     } catch (error) {
+      setError('Failed to fetch products');
       console.error('Failed to fetch products:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -37,6 +44,7 @@ export default function Products() {
     const confirm = window.confirm("Are you sure you want to delete this product?");
     if (!confirm) return;
 
+    setIsLoading(true);
     try {
       const response = await fetch(`http://localhost:8080/products/${id}`, {
         method: 'DELETE',
@@ -44,11 +52,15 @@ export default function Products() {
 
       if (response.ok) {
         setProducts((prev) => prev.filter((product) => product.id !== id));
+        setError(null);
       } else {
-        console.error('Failed to delete product');
+        setError('Failed to delete product');
       }
     } catch (error) {
+      setError('Error deleting product');
       console.error('Error deleting product:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -59,6 +71,7 @@ export default function Products() {
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
       const response = await fetch('http://localhost:8080/products', {
@@ -77,13 +90,16 @@ export default function Products() {
       if (response.ok) {
         setFormData({ name: '', categoryName: '', price: '', stock: '' });
         setShowModal(false);
-        loadProducts();
+        await loadProducts();
       } else {
         const error = await response.text();
-        alert('Error: ' + error);
+        setError('Error: ' + error);
       }
     } catch (error) {
+      setError('Error adding product');
       console.error('Error adding product:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -92,7 +108,7 @@ export default function Products() {
     setEditingProductId(product.id);
     setFormData({
       name: product.name,
-      categoryName: product.category, // Don't touch
+      categoryName: product.category,
       price: product.price,
       stock: product.stock,
     });
@@ -101,6 +117,7 @@ export default function Products() {
 
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
       const response = await fetch(`http://localhost:8080/products/${editingProductId}`, {
@@ -110,7 +127,7 @@ export default function Products() {
         },
         body: JSON.stringify({
           name: formData.name,
-          categoryName: formData.categoryName,  // Don't touch
+          categoryName: formData.categoryName,
           price: parseFloat(formData.price),
           stock: parseInt(formData.stock),
         }),
@@ -121,13 +138,16 @@ export default function Products() {
         setShowModal(false);
         setIsEditing(false);
         setEditingProductId(null);
-        loadProducts();
+        await loadProducts();
       } else {
         const error = await response.text();
-        alert('Error updating product: ' + error);
+        setError('Error updating product: ' + error);
       }
     } catch (error) {
+      setError('Error updating product');
       console.error('Error updating product:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -136,86 +156,102 @@ export default function Products() {
   );
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">Products</h1>
+    <div className="p-6 max-w-7xl mx-auto">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Product Management</h1>
+      
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
+          {error}
+        </div>
+      )}
+
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div className="w-full md:w-1/2">
+          <input
+            type="text"
+            placeholder="Search products by name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="text-white w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            disabled={isLoading}
+          />
+        </div>
         <button
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+          className={`px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
           onClick={() => {
             setShowModal(true);
             setIsEditing(false);
             setFormData({ name: '', categoryName: '', price: '', stock: '' });
           }}
+          disabled={isLoading}
         >
           Add Product
         </button>
       </div>
 
-      <input
-        type="text"
-        placeholder="Search products by name..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className=" w-full px-4 py-2 mb-6 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring focus:border-blue-400 text-gray-800"
-      />
-
-      <div className="overflow-x-auto bg-white rounded shadow-sm">
-        <table className="min-w-full text-left text-sm text-gray-800">
-          <thead className="bg-gray-200 text-gray-800 font-semibold">
-            <tr>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Category</th>
-              <th className="px-4 py-3">Price</th>
-              <th className="px-4 py-3">Stock</th>
-              <th className="px-4 py-3">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map((product) => (
-                <tr key={product.id} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-2">{product.name}</td>
-                  <td className="px-4 py-2">{product.category}</td>
-                  <td className="px-4 py-2">₹{product.price.toFixed(2)}</td>
-                  <td className="px-4 py-2">
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-semibold ${getStockBadgeColor(product.stock)}`}
-                    >
-                      {product.stock}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 space-x-2">
-                    <button
-                      className="text-blue-600 hover:underline"
-                      onClick={() => handleEditClick(product)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="text-red-600 hover:underline"
-                      onClick={() => handleDelete(product.id)}
-                    >
-                      Delete
-                    </button>
+      {isLoading && products.length === 0 ? (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredProducts.length > 0 ? (
+                filteredProducts.map((product) => (
+                  <tr key={product.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.category}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₹{product.price.toFixed(2)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStockBadgeColor(product.stock)}`}>
+                        {product.stock}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <button
+                        onClick={() => handleEditClick(product)}
+                        disabled={isLoading}
+                        className="text-indigo-600 hover:text-indigo-900 mr-3 disabled:opacity-50"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        disabled={isLoading}
+                        className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
+                    No products found
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="5" className="text-center px-4 py-4 text-gray-500">
-                  No products found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Modal */}
       {showModal && (
-        <div className="text-black fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl">
-            <h2 className="text-xl font-bold mb-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">
               {isEditing ? 'Edit Product' : 'Add New Product'}
             </h2>
             <form
@@ -223,45 +259,60 @@ export default function Products() {
               autoComplete="off"
               className="space-y-4"
             >
-              <input
-                autoFocus
-                type="text"
-                name="name"
-                placeholder="Name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-                className="w-full px-4 py-2 border rounded"
-              />
-              <input
-                type="text"
-                name="categoryName"
-                placeholder="Category"
-                value={formData.categoryName}
-                onChange={handleInputChange}
-                required
-                className="w-full px-4 py-2 border rounded"
-              />
-              <input
-                type="number"
-                name="price"
-                placeholder="Price"
-                value={formData.price}
-                onChange={handleInputChange}
-                required
-                className="w-full px-4 py-2 border rounded"
-              />
-              <input
-                type="number"
-                name="stock"
-                placeholder="Stock"
-                value={formData.stock}
-                onChange={handleInputChange}
-                required
-                className="w-full px-4 py-2 border rounded"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                <input
+                  autoFocus
+                  type="text"
+                  name="name"
+                  placeholder="Product name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  className="text-white w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
 
-              <div className="flex justify-end gap-3 mt-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                <input
+                  type="text"
+                  name="categoryName"
+                  placeholder="Category"
+                  value={formData.categoryName}
+                  onChange={handleInputChange}
+                  required
+                  className="text-white w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Price *</label>
+                <input
+                  type="number"
+                  name="price"
+                  placeholder="Price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  required
+                  className="text-white w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Stock *</label>
+                <input
+                  type="number"
+                  name="stock"
+                  placeholder="Stock quantity"
+                  value={formData.stock}
+                  onChange={handleInputChange}
+                  required
+                  className="text-white w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-2">
                 <button
                   type="button"
                   onClick={() => {
@@ -269,15 +320,17 @@ export default function Products() {
                     setIsEditing(false);
                     setFormData({ name: '', categoryName: '', price: '', stock: '' });
                   }}
-                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  disabled={isLoading}
+                  className={`px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
-                  {isEditing ? 'Update Product' : 'Add Product'}
+                  {isLoading ? 'Processing...' : (isEditing ? 'Update' : 'Add')}
                 </button>
               </div>
             </form>

@@ -103,7 +103,7 @@ export default function UserProducts() {
           placeholder="Search by name"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          className="px-4 py-2 w-full md:w-1/3 border border-gray-300 rounded shadow-sm text-gray-800"
+          className="bg-white px-4 py-2 w-full md:w-1/3 border border-gray-300 rounded shadow-sm text-gray-800"
         />
         {/* <select
           value={searchCategory}
@@ -179,7 +179,7 @@ export default function UserProducts() {
                 min={1}
                 value={orderQuantity}
                 onChange={(e) => setOrderQuantity(Number(e.target.value))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                className="bg-white w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
               />
               {orderError && <p className="text-red-600 mt-1 text-sm">{orderError}</p>}
             </div>

@@ -22,7 +22,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/users/login").permitAll() // Allow login without auth
-                .requestMatchers("/users/**", "/products/**", "/categories/**","/orders/**").permitAll()
+                .requestMatchers("/users/**", "/products/**", "/categories/**","/orders/**", "/ashboard/**").permitAll()
                 .anyRequest().authenticated()
             )
             .httpBasic(Customizer.withDefaults()) // This enables HTTP Basic Auth
